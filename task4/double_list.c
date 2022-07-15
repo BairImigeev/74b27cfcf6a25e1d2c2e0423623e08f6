@@ -9,44 +9,33 @@ int main()
 {
     int index;
     node* main_list;
-    int variant; 
+    int variant, input; 
     FILE *file;
-	  do 
+	do 
     {
         print_menu(); 
         variant = get_variant(8); 
-        switch (variant) {
+        switch (variant) 
+        {
             case 1:
-            int input; 
-            printf("1. Генерация случайных записей\n");
-            printf("2. Создание списка с вводом значений\n ");
-            scanf("%d", &input);
-            if (input == 1) {
-              printf("!!!");
-            }
-            if (input == 2) 
-			{   
-            node* list = NULL; 
-	      	main_list = create_list_hands(list);
-            
-	            /* printing the list. */
-			printf(" List:\n");
-			print_list(main_list);
-			printf("\n");
-            }    
-            break;
-            
+                node* list = NULL;
+                main_list = create_list_hands(list);
+                printf("List:\n");
+                print_list(main_list);
+                printf("\n");
+                break;
+
             case 2:
                 printf("введите индекс для поиска: ");
                 scanf("%d", &index);
-                printf("%d : %s ",index, (get_by_index(index, main_list))->data);
+                search_index(index, main_list);
                 break;
 
             case 3:
                 printf("введите индекс для удаления: ");
                 scanf("%d", &index);
                 main_list = remove_by_index(index, main_list);
-                print_list(main_list);
+                // print_list(main_list);
                 break;
 
             case 4:
@@ -62,22 +51,27 @@ int main()
                 scanf("%s", word);
                 main_list = add_index(word, index, main_list);
                 break;
-            
+
             case 6:
                 printf("список : ");
                 print_list(main_list);
                 break;
+
             case 7:
                 save_file(main_list);
                 break;
+
             case 8:
-                open_file(file);
+                main_list = NULL;
+                file = fopen("words", "r");
+                main_list = open_file(file, main_list);
                 break;
+                
             case 9:
-                break;  
+                main_list = generation(main_list);
+                break;
         }
-       
-    } while (variant != 9);
-    
-    return 0;
+    } while (variant != 10);
+return 0;
 }
+
