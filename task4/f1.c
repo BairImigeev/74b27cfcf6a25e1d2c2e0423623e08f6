@@ -3,80 +3,42 @@
 #include <string.h>
 #include "f1.h"
 
-node *start, *end, *tmp;
+node *start, *end, *tmp, *new_list;
 data word;
+int i, ending;
 
-node *ending(node *list, int count)
-{
-
-	while(list)
-	{
-		count++;
-		if (list->next==NULL) 
-		{
-			end = list;
-		}
-		list = list->next;
-	}
-	return end;
-}
-
-int count(node* list) 
-{
-	int count = 0;
-  	while(list)
-	{
-		count++;
-		list = list->next;
-	}	
-	return count;
-}
 
 node* get_by_index(int index, node* list)
 {
-	int counter = count(list);
-	int i = 0;
-	if (index < 0 || index > counter) 
+	count(list);
+	if (index >= ending/2) 
 	{
-		printf("индекс отсутствует");
-		return NULL;
-	}
-	if (index >= counter/2) 
-	{
-		printf("!здесь!\n");
 		list = end;
-		i = counter-1;
-		while(i != index)
+	    for (i=ending; i>=index; i--)
 		{
-			printf("i = %d",i);
-			if (list->previous == NULL) {
+			if (i == index) {
 				return list;
-			}
-			list=list->previous;
-			i--;
+			}			
+            list = list->previous;
 		}
-		return list;      
-	}
-	if (index<counter/2) 
+	}	  	      
+	if (index<ending/2) 
 	{
-		printf("!здесь2!\n");
-		for (i = 0; i <= index; i++) 
-		{
-			if (i == index) 
+		for (i = 0; i <= index; i++) {
+			if (i == index)
 			{
 				return list;
 			}
 		list = list->next;
 		}
-		return list;
-    }
-	//return list;
+	}
+	return list;
 }
 
 node* search_value(data word, node *list)
 {
 	tmp=NULL;
-	int i = 0;
+	i = 0;
   	while(list)
 	{
 		if (strcmp(word, list->data) == 0)
@@ -100,39 +62,38 @@ node* remove_first(node *list)
 	list = list->next;
 	free(list->previous);
 	list->previous = NULL;
+	count(list);
 	return list;
 }
 
 node* remove_last(node* list) 
 {
-	tmp = end;
-	free(tmp);
+	end->previous->next = NULL;
+    free(end);
+	count(list);
 	return list;
 }
 
 node* remove_by_index(int index, node* list) 
 {
 	node* current;
+
+	if (index < 0 || index > ending) {
+		printf("индекс отсутствует\n");
+		return list;
+	}
 	if (index == 0) {
 		return remove_first(list);
-	} else if ( index < 0) {
-		return list;
 	}
-	index = index-1;
-	current = get_by_index(index, list);
-	if (current == NULL) {
-		printf("отсутствует индекс");
-		return list;
-	}  
-	current->previous->next = current->next;
-	if (current->next != NULL) {
-		current->next->previous = current->previous;
+	if (index == ending) {
+		return remove_last(list);
 	}
-	else
 	
-	return remove_last(list);
-	printf(" удален");
+	current = get_by_index(index, list);
+	current->previous->next = current->next;
+	current->next->previous = current->previous;
 	free(current);
+	count(list);
 	return list;
 }
 
@@ -140,16 +101,11 @@ node* add_first(node* list)
 {
 	node* new_node;
 	new_node = (node*)malloc(sizeof(node));
-
 	strcpy(new_node->data, "hello");
-    new_node->next = list;
-
-	if (list != NULL) 
-	{
-		list->previous = new_node;
-	}
-    list = new_node;
-	return list;
+	list = new_node;
+	list->next = NULL;
+	list->previous = NULL;
+    return list;
 }
 
 node *add_start(data word, node *list)
@@ -163,13 +119,14 @@ node *add_start(data word, node *list)
 	new_node->previous = NULL;
 	new_node->next = list;
 	list = new_node;
+	count(list);
 	return list;
 }
 
 node *add_end(data word, node *list)
 {
 	node *new_node;
-	tmp = ending(list, count(list));
+	tmp = end;
 
 	new_node = (node*)malloc(sizeof(node));
 	
@@ -177,22 +134,24 @@ node *add_end(data word, node *list)
  	tmp->next = new_node;
 	new_node->previous = tmp;
 	new_node->next = NULL;
+	count(list);
 	return list;
 }
 
 node *add_index(data word, int index, node * list) 
 {	
+	count(list);
 	node *new_node;
 	new_node = (node*)malloc(sizeof(node));
     if (index == 0 || index == -1) 
 	{
-		tmp = add_start(word, list);
-		printf("Добавление в начало");
+		list = add_start(word, list);
+		printf("Добавление в начало списка :\n");
 	}
-	else if (index+1 > count(list))
+	else if (index > ending)
 	{
-		tmp = add_end(word, list);
-		printf("Добавление в конец");
+		list = add_end(word, list);
+		printf("Добавление в конец списка :\n");
 	}
 	else 
 	{
@@ -202,31 +161,36 @@ node *add_index(data word, int index, node * list)
 		new_node->previous = tmp->previous;                      
 		tmp->previous->next = new_node;
 		tmp->previous=new_node;
-		tmp = list;
 	}
-	return tmp; 
+	count(list);
+	return list; 
 }     
 
-void add_last(data word, node* current) 
+void add_last(data word, node* list)
 {
 	node* new_node;
 	new_node = (node*)malloc(sizeof(node));
-	while(current) 
+	while(list) 
 	{
-		if (current->next == NULL) 
+		if (list->next == NULL)
 		{
-			current->next = new_node;
+			list->next = new_node;
 			strcpy(new_node->data, word);
-			new_node->previous = current;
+			new_node->previous = list;
+			new_node->next = NULL;
 			return;
 		}
-		current = current->next;
+		list = list->next;
 	}
 }
 
 void print_list(node* current) {
-	printf("\n");
-	int i = 0;
+	printf("текущий указатель : %p\n", current);
+	i = 0;
+	if (current == NULL) {
+		printf("Остуствует список\n");
+		return;
+	} 
 	while(current) {
 		printf("%d : пред: %p адрес: %p знач: %s след: %p\n", i, current->previous, current, current->data, current->next);
 		printf("\n");
@@ -237,7 +201,7 @@ void print_list(node* current) {
 }
 
 void print_menu() {
-    printf("1. Создание базы\n");
+	printf("1. Создание списка с вводом значений\n ");
 	printf("2. Поиск элемента по индексу\n");
 	printf("3. Удаление элемента по индексу\n");
 	printf("4. Поиск элемента по значению\n");
@@ -245,15 +209,31 @@ void print_menu() {
 	printf("6. Вывод списка\n");
 	printf("7. Сохранение в файл\n");
 	printf("8. Считывание из файла\n");
+	printf("9. Генерация случайных записей\n");            
 	printf("Ваш выбор : \n");
 }
 
-int get_variant(int count) {
+
+int count(node* list) {
+	i = 0;
+	start = list;
+	while(list) {
+		i++;
+		if (list->next == NULL) {
+			end = list;
+		}
+		list = list->next;
+	}
+	ending = i-1;
+	return ending;
+}
+
+int get_variant(int var) {
     int variant;
     char s[10]; 
     scanf("%s", s);
 
-    while (sscanf(s, "%d", &variant) != 1 || variant < 1 || variant > count) {
+    while (sscanf(s, "%d", &variant) != 1 || variant < 1 || variant > var) {
         printf("Неккоректный ввод. Ещё раз: ");
         scanf("%s", s); 
     }
@@ -271,13 +251,12 @@ node *create_list_hands(node *list) {
 		printf("продолжим ? \n");
 		scanf("%d", &answer);
 	}
-	end = ending(list, count(list));
 	return list;
 }
 
 void save_file(node *current) {
 	FILE *file = fopen("data_list", "w");
-	int i = 0;
+    i = 0;
 	while(current) {
 		fputs(current->data, file);
 		fputs("\n", file);
@@ -287,16 +266,47 @@ void save_file(node *current) {
 	fclose(file);
 }
 
-void open_file(FILE *file) {
+node *open_file(FILE *file, node * list) {
 	if (file==NULL) 
 	{
 		printf("Ошибка открытия файла.\n\n");
+	}
+	{ 
+		tmp = add_first(list);
+		while(!feof (file)) 
+		{
+			fgets(word, 20, file);
+			add_last(word, tmp);
+		}
+		list = tmp;
+		fclose(file);
+	}
+	return list;
+}
+
+void search_index(int index, node* list) {
+	count(list);
+	if (index < 0 || index > ending)  {
+		printf("Такой индекс отсутствует\n");
 		return;
 	}
-    while(!feof (file)) 
+	printf("Индекс %d : %s \n",index, (get_by_index(index, list))->data);
+}
+
+node *generation(node *list) {
+    
+	count(list);
+	new_list=NULL;
+	new_list = add_first(new_list);
+	printf("длина списка : %d\n", ending);
+
+    int ran, j; 
+	for (j=0; j <= 500000000; j++) 
 	{
-	if (fgets(word, 20, file))
-	printf("%s", word);
+        ran = rand()%ending;
+		printf("счёт : %d\n", j);
+		printf("случаное число : %d\n", ran);
+		add_last(get_by_index(ran, list)->data, new_list);
 	}
-    fclose(file);
+	return new_list;
 }
