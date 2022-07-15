@@ -1,4 +1,4 @@
-typedef char data[20];
+typedef char data[30];
 
 struct list_node 
 {
@@ -8,10 +8,6 @@ struct list_node
 };
 
 typedef struct list_node node;
-
-node *ending(node *list, int count);
-
-int count(node* list); 
 
 node* get_by_index(int index, node* list);
 
@@ -38,3 +34,13 @@ void print_list(node* current);
 void print_menu();
 
 int get_variant(int count);
+
+int count(node* list); 
+
+void search_index(int index, node* list);
+
+void save_file(node *current);
+
+node *open_file(FILE *file, node * list);
+
+node *generation(node *list);
